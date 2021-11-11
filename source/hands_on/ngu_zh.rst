@@ -132,13 +132,13 @@ episodic/rnd内在奖励模型训练时batch_size应设置足够大(例如320)�
 实现
 ---------------
 
-The interface of rnd reward model is defined as follows:
+局间内在奖励模型(RndNGURewardModel)的接口定义如下：
 
 .. autoclass:: ding.reward_model.ngu_reward_model.RndNGURewardModel
    :members: __init__, estimate
    :noindex:
 
-The interface of Episodic reward model is defined as follows:
+局内内在奖励模型(EpisodicNGURewardModel的接口定义如下：
 
 .. autoclass:: ding.reward_model.ngu_reward_model.EpisodicNGURewardModel
    :members: __init__, estimate
