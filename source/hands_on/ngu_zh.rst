@@ -4,22 +4,21 @@ NGU
 概述
 --------
 
-NGU (Never Give up) 首次提出于论文
-`Never Give Up: Learning Directed Exploration Strategies <https://arxiv.org/abs/2002.06038>`__,
-通过学习一系列定向探索策略(directed exploratory policies)来解决困难的探索游戏。它的内在奖励分为2部分: 局内内在奖励(episodic intrinsic reward)
+NGU (Never Give up) 首次在论文
+`Never Give Up: Learning Directed Exploration Strategies <https://arxiv.org/abs/2002.06038>`__ 中提出,
+通过学习一组不同程度的探索策略(directed exploratory policies)来解决探索困难的游戏。它定义的内在奖励分为2部分: 局内内在奖励(episodic intrinsic reward)
 和局间内在奖励(life-long/inter-episodic intrinsic reward).
 
-**局内内在奖励** 核心思想在于迅速的抑制智能体在同一局中再次访问相似的状态，是通过维护一个存有一局轨迹的memory，然后根据与当前状态最相似的k个transition的距离计算得到的。
-其中它通过训练一个自监督逆动力学模型，用于将原始观测映射为一个controllable state，它只包含环境观测中智能体动作能够影响的部分而去掉那些环境噪声。
+**局内内在奖励** 核心思想在于在同一局中迅速的抑制智能体再次访问相似的状态，这是通过维护一个存有一局历史样本embedding的memory，然后根据与当前观测的embedding最相似的k个样本的距离计算得到
+一个局内内在奖励值。这里的embedding期望它只包含环境观测中智能体动作能够影响的部分而去掉那些环境噪声，因此又称为controllable state，它是通过训练一个自监督逆动力学模型来实现的。
+**局间内在奖励** 核心思想在于缓慢的抑制智能体访问那些历史局中已经多次访问过的状态，采用 `RND <https://arxiv.org/abs/1810.12894v1>`__  内在奖励来实现此功能。
+接着局内内在奖励和局间内在奖励通过相乘的方式融合为新的的内在奖励，然后乘以一个内在奖励的权重beta，再加上原始外在奖励，作为最终的奖励。
 
-**局间内在奖励** 核心思想在于缓慢的抑制智能体访问那些历史局中已经多次访问过的状态，这里采用RND来实现此功能，具体参见。
-然后局内内在奖励和局间内在奖励通过相乘的方式融合为新的的内在奖励，然后乘以一个内在奖励的权重beta，再加上原始外在奖励，作为最终的奖励，学习Q值。
-
-NGU采用使用一个相同的神经网络同时学习许多定向探索策略(即不同的奖励折扣因子gamma和内在奖励权重beta)，在探索和利用之间进行不同的权衡。
-所提出的方法可以与现代分布式RL框架结合，通过在不同环境实例上并行运行许多collector收集大量经验，在收集游戏轨迹的过程中，每一局开始时随机采样一个gamma和beta
-在我们的实现中，不同环境实例具有不同的固定的episolon。
-NGU在 Atari-57 套件中的所有难于探索的任务中性能翻倍，同时在其余游戏中保持非常高的分数，其人类标准化分的中位数为1344.0%。
-作者声称NGU是第一个在不使用专家轨迹和手工设计特征的情况下，在 Pitfall 游戏中实现非零奖励（平均得分为 8,400）的算法。
+NGU使用一个神经网络(Q函数)同时学习一组不同程度的探索策略(即具有不同的奖励折扣因子gamma和内在奖励权重beta)，在探索和利用之间进行不同程度的权衡。
+所提出的方法与现代分布式RL算法 `R2D2 <https://openreview.net/forum?id=r1lyTjAqYX>`__ 结合，通过在不同环境实例上并行运行一组collector收集大量经验，加速收集与训练过程。
+在我们的实现中，在收集样本的过程中，每一局开始时随机采样一个gamma和beta，且对于不同环境实例具有不同的固定的epsilon。
+NGU在Atari-57套件中的所有难于探索的任务中性能翻倍，同时在其余游戏中保持非常高的分数，其人类标准化分的中位数为1344.0%。
+作者声称NGU是第一个在不使用专家轨迹和手工设计特征的情况下，在Pitfall游戏中实现非零奖励（平均得分为 8,400）的算法。
 
 核心要点
 -----------
@@ -157,7 +156,7 @@ Note: ``...`` indicates the omitted code snippet. For the complete code, please 
 RndNetwork/InverseNetwork
 ~~~~~~~~~~~~~~~~~
 首先，我们定义类 ``RndNetwork`` 涉及两个神经网络：固定和随机初始化的目标网络 ``self.target`` ，
-和预测网``self.predictor`` 根据代理收集的数据进行训练。我们定义类 ``InverseNetwork`` 也分为 2个部分：``self.embedding_net`` 负责将原始观测映射到隐空间，
+和预测网络 ``self.predictor`` 根据代理收集的数据进行训练。我们定义类 ``InverseNetwork`` 也分为 2个部分：``self.embedding_net`` 负责将原始观测映射到隐空间，
 和 ``self.inverse_net`` 根据t时刻观测和t+1时刻观测的 ``embedding`` ，预测t时刻的动作。
         .. code-block:: python
 
