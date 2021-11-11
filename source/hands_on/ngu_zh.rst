@@ -7,11 +7,14 @@ NGU
 NGU (Never Give up) 首次提出于论文
 `Never Give Up: Learning Directed Exploration Strategies <https://arxiv.org/abs/2002.06038>`__,
 通过学习一系列定向探索策略(directed exploratory policies)来解决困难的探索游戏。它的内在奖励分为2部分: 局内内在奖励(episodic intrinsic reward)
-和局间内在奖励(life-long/inter-episodic intrinsic reward). **局内内在奖励** 核心思想在于迅速的抑制智能体在同一局中再次访问相似的状态，
-是通过维护一个存有一局轨迹的memory，然后根据与当前状态最相似的k个transition的距离计算得到的。
+和局间内在奖励(life-long/inter-episodic intrinsic reward).
+
+**局内内在奖励** 核心思想在于迅速的抑制智能体在同一局中再次访问相似的状态，是通过维护一个存有一局轨迹的memory，然后根据与当前状态最相似的k个transition的距离计算得到的。
 其中它通过训练一个自监督逆动力学模型，用于将原始观测映射为一个controllable state，它只包含环境观测中智能体动作能够影响的部分而去掉那些环境噪声。
+
 **局间内在奖励** 核心思想在于缓慢的抑制智能体访问那些历史局中已经多次访问过的状态，这里采用RND来实现此功能，具体参见。
-然后局内内在奖励和局间内在奖励通过相乘的方式融合为新的的内在奖励，然后乘以一个内在奖励的权重beta，再加上原始外在奖励，作为最终的奖励，学习Q值.
+然后局内内在奖励和局间内在奖励通过相乘的方式融合为新的的内在奖励，然后乘以一个内在奖励的权重beta，再加上原始外在奖励，作为最终的奖励，学习Q值。
+
 NGU采用使用一个相同的神经网络同时学习许多定向探索策略(即不同的奖励折扣因子gamma和内在奖励权重beta)，在探索和利用之间进行不同的权衡。
 所提出的方法可以与现代分布式RL框架结合，通过在不同环境实例上并行运行许多collector收集大量经验，在收集游戏轨迹的过程中，每一局开始时随机采样一个gamma和beta
 在我们的实现中，不同环境实例具有不同的固定的episolon。
@@ -21,8 +24,8 @@ NGU在 Atari-57 套件中的所有难于探索的任务中性能翻倍，同时�
 核心要点
 -----------
 
-1. NGU的基线强化学习算法是r2d2, 具体参见 `Recurrent Experience Replay in Distributed Reinforcement Learning <https://openreview.net/forum?id=r1lyTjAqYX>`__ 和我们的实现
-   `r2d2 <hhttps://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`__ ，它是一个基于分布式框架，采用了双Q网络, dueling结构，n-step td的DQN算法。
+1. NGU的基线强化学习算法是 `R2D2 <https://openreview.net/forum?id=r1lyTjAqYX>`__ ,可以参考我们的实现
+   `r2d2 <hhttps://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`__ ，它本质上是一个基于分布式框架，采用了双Q网络, dueling结构，n-step td的DQN算法。
 
 2. NGU是一种结合了局内内在奖励和局间内在奖励，并利用一组具有不同折扣因子和融合系数的的探索强化学习方法，(其中局内内在奖励对应论文 `ICM <https://arxiv.org/pdf/1705.05363.pdf>`__
    局间内在奖励对应论文 `RND <https://arxiv.org/abs/1810.12894v1>`__ )的探索方法。
@@ -43,11 +46,11 @@ NGU在 Atari-57 套件中的所有难于探索的任务中性能翻倍，同时�
 关键方程或关键框图
 ---------------------------
 
-NGU的整体草图如下：
+NGU算法的整体训练与计算流程如下：
 
 .. figure:: images/ngu.png
    :align: center
-   :scale: 85%
+   :scale: 20%
    :alt:
 
 图中左边部分是逆向动力学模型的训练框架，右边部分是局间内在奖励(RND奖励)和局内内在奖励(ICM奖励)的产生与融合示意图。
@@ -57,31 +60,28 @@ NGU的整体草图如下：
 
 .. figure:: images/ngu_fusion_intrinsic_reward.png
    :align: center
-   :scale: 50%
+   :scale: 20%
    :alt:
 
-图中左边部分是逆向动力学模型的训练框架，右边部分是局间内在奖励(RND奖励)和局内内在奖励(ICM奖励)的产生与融合示意图。
-
-N组奖励折扣因子和内在奖励权重系数的分布图：
+N组奖励折扣因子和内在奖励权重系数的分布图如下所示：
 
 .. figure:: images/ngu_beta_gamma.png
    :align: center
-   :scale: 50%
+   :scale: 20%
    :alt:
 
-图中左边部分是内在奖励权重系数beta，右边部分是奖励折扣因子gamma,他们的计算公式如下图所示。
+图中左边部分是内在奖励权重系数beta，右边部分是奖励折扣因子gamma, 他们的具体计算公式如下图所示。
 
 .. figure:: images/ngu_beta.png
    :align: center
-   :scale: 50%
+   :scale: 20%
    :alt:
 
 .. figure:: images/ngu_gamma.png
    :align: center
-   :scale: 50%
+   :scale: 20%
    :alt:
 
-有兴趣的读者可以参考后续改进工作 `Agent57: Outperforming the Atari Human Benchmark <https://arxiv.org/abs/2003.13350>`__.
 
 伪代码
 -----------
@@ -89,34 +89,35 @@ N组奖励折扣因子和内在奖励权重系数的分布图：
 
 .. figure:: images/ngu_episodic_intrinsic_reward.png
    :align: center
-   :scale: 85%
+   :scale: 20%
    :alt:
 
-上图r2d2算法的细节，请参考`Recurrent Experience Replay in Distributed Reinforcement Learning <https://openreview.net/forum?id=r1lyTjAqYX>`__ 和我们的实现
+关于r2d2算法的细节，请参考`Recurrent Experience Replay in Distributed Reinforcement Learning <https://openreview.net/forum?id=r1lyTjAqYX>`__ 和我们的实现
 `r2d2 <hhttps://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`__
 
 重要的实现细节
 -----------
 
 1. 奖励归一化。在通过上面所述的算法计算得到局内内在奖励后，由于在智能体学习的不同阶段和不同的环境下，它的幅度是变化剧烈的，如果直接用作后续的计算，很容易造成学习的不稳定。在我们
-的实现中，是按照下面的最大最小归一化公式 归一化到[0,1]之间: episodic_reward = (episodic_reward - episodic_reward.min()) / (episodic_reward.max() - episodic_reward.min() + 1e-11)，
+的实现中，是按照下面的最大最小归一化公式 归一化到[0,1]之间:
+``episodic_reward = (episodic_reward - episodic_reward.min()) / (episodic_reward.max() - episodic_reward.min() + 1e-11)``，
 其中episodic_reward是一个mini-batch计算得到的局内内在奖励。我们也分析了其他归一化方式的效果。
 
     方法1: transform to batch mean1: erbm1
     由于我们的实现中批数据里面可能会有null_padding的样本(注意null_padding样本的原始归一化前的episodic reward=0)，造成episodic_reward.mean()不是真正的均值，需要特别处理计算得到真实的均值episodic_reward_real_mean，
     这给代码实现造成了额外的复杂度，此外这种方式不能将局内内在奖励的幅度限制在一定范围内，造成内在奖励的加权系数不好确定。
-    episodic_reward = episodic_reward / (episodic_reward.mean() + 1e-11)
+    ``episodic_reward = episodic_reward / (episodic_reward.mean() + 1e-11)``
 
     方法2. transform to long-term mean1: erlm1
     存在和方法1类似的问题
-    episodic_reward = episodic_reward / self._running_mean_std_episodic_reward.mean
+    ``episodic_reward = episodic_reward / self._running_mean_std_episodic_reward.mean``
 
     方法3. transform to mean 0, std 1
     由于rnd_reward在[1,5]集合内, episodic reward 应该大于0,例如如果episodic_reward是 -2, rnd_reward 越大, 总的intrinsic reward却越小, 这是不正确的
-    episodic_reward = (episodic_reward - self._running_mean_std_episodic_reward.mean)/ self._running_mean_std_episodic_reward.std
+    ``episodic_reward = (episodic_reward - self._running_mean_std_episodic_reward.mean)/ self._running_mean_std_episodic_reward.std``
 
     方法4. transform to std1, 似乎没有直观的意义
-    episodic_reward = episodic_reward / self._running_mean_std_episodic_reward.std
+    ``episodic_reward = episodic_reward / self._running_mean_std_episodic_reward.std``
 
 2. 在minigrid环境上，由于环境设置只有在智能体达到目标位置时，智能体才获得一个正的0到1之间的奖励，其他时刻奖励都为零，在这种环境上累计折扣内在奖励的幅度会远大于原始的0，1之间的数，造成
 智能体学习的目标偏差太大，为了缓解这个问题，我们在实现中对每一局的最后一个非零的奖励乘上一个权重因子，实验证明如果不加这个权重因子，在最简单的empty8环境上算法也不能收敛，这显示了原始
@@ -132,13 +133,13 @@ episodic/rnd内在奖励模型训练时batch_size应设置足够大(例如320)�
 实现
 ---------------
 
-局间内在奖励模型(RndNGURewardModel)的接口定义如下：
+局间内在奖励模型( ``RndNGURewardModel`` )的接口定义如下：
 
 .. autoclass:: ding.reward_model.ngu_reward_model.RndNGURewardModel
    :members: __init__, estimate
    :noindex:
 
-局内内在奖励模型(EpisodicNGURewardModel的接口定义如下：
+局内内在奖励模型( ``EpisodicNGURewardModel`` )的接口定义如下：
 
 .. autoclass:: ding.reward_model.ngu_reward_model.EpisodicNGURewardModel
    :members: __init__, estimate
@@ -155,9 +156,9 @@ Note: ``...`` indicates the omitted code snippet. For the complete code, please 
 
 RndNetwork/InverseNetwork
 ~~~~~~~~~~~~~~~~~
-首先，我们定义类 ``RndNetwork`` 涉及两个神经网络：固定和随机初始化的目标网络``self.target``，
-和预测网络“self.predictor”根据代理收集的数据进行训练。我们定义类 ``InverseNetwork`` 也分为 2个部分：``self.embedding_net`` 负责将原始观测映射到隐空间，
-和“self.inverse_net”根据t时刻观测和t+1时刻观测的embedding，预测t时刻的动作。
+首先，我们定义类 ``RndNetwork`` 涉及两个神经网络：固定和随机初始化的目标网络 ``self.target`` ，
+和预测网``self.predictor`` 根据代理收集的数据进行训练。我们定义类 ``InverseNetwork`` 也分为 2个部分：``self.embedding_net`` 负责将原始观测映射到隐空间，
+和 ``self.inverse_net`` 根据t时刻观测和t+1时刻观测的 ``embedding`` ，预测t时刻的动作。
         .. code-block:: python
 
          class RndNetwork(nn.Module):
@@ -221,10 +222,10 @@ RndNetwork/InverseNetwork
 内在奖励计算
 ~~~~~~~~~~~~~~~~~
 
-关于RndNGURewardModel/EpisodicNGURewardModel的训练部分请参考`ngu_reward_model <hhttps://github.com/opendilab/DI-engine/blob/main/ding/reward_model/ngu_reward_model.py>`__.
+关于RndNGURewardModel/EpisodicNGURewardModel的训练部分请参考 `ngu_reward_model <hhttps://github.com/opendilab/DI-engine/blob/main/ding/reward_model/ngu_reward_model.py>`__ .
 这里主要展示是如何根据已经训练好的模型计算局内内在奖励(``episodic reward``)和局外内在奖励(``rnd reward``)。
 
-    1.episodic reward在我们在类 ``EpisodicNGURewardModel`` 的方法``_compute_intrinsic_reward`` 中实现根据当前的``episodic_memory``计算得到当前状态的局内内在奖励。
+    1.episodic reward在我们在类 ``EpisodicNGURewardModel`` 的方法 ``_compute_intrinsic_reward`` 中实现根据当前的 ``episodic_memory`` 计算得到当前状态的局内内在奖励。
 
         .. code-block:: python
 
@@ -255,7 +256,7 @@ RndNetwork/InverseNetwork
 
 
 
-    2.我们是在收集一批样本后，从replay buffer中采样一个mini-batch的样本序列，调用上面的``_compute_intrinsic_reward`` 计算 episodic 内在奖励.
+    2.我们是在收集一批样本后，从replay buffer中采样一个mini-batch的样本序列，调用上面的 ``_compute_intrinsic_reward`` 计算局内内在奖励.
 
         .. code-block:: python
 
@@ -307,7 +308,7 @@ RndNetwork/InverseNetwork
 
                 return episodic_reward
 
-    3. 计算 rnd 内在奖励.
+    3. 计算局间内在奖励.
 
         .. code-block:: python
 
@@ -424,6 +425,9 @@ RndNetwork/InverseNetwork
    - MiniGrid-Doorkey-16x16-v0 + ngu
    .. image:: images/doorkey_ngu.png
      :align: center
+
+读者仔细思考可以发现NGU仍然存在一些问题：例如如何选择N,将内在奖励和外在奖励分为2个Q网络来学习，如何自适应的奖励选择折扣因子和内在奖励权重系数。
+有兴趣的读者可以阅读后续改进工作 `Agent57: Outperforming the Atari Human Benchmark <https://arxiv.org/abs/2003.13350>`__.
 
 参考资料
 ---------
