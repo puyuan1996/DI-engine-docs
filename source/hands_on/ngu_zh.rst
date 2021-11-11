@@ -150,8 +150,7 @@ NGU的接口定义如下,它相对于r2d2主要有以下几个改动，首先网
 .. autoclass:: ding.policy.ngu.NGUPolicy
    :noindex:
 
-Note: ``...`` indicates the omitted code snippet. For the complete code, please refer to our
-`implementation <https://github.com/opendilab/DI-engine/blob/main/ding/reward_model/ngu_reward_model.py>`__ in DI-engine.
+注意：``...`` 表示省略的代码片段, 完整代码请参考我们的 `implementation <https://github.com/opendilab/DI-engine/blob/main/ding/reward_model/ngu_reward_model.py>`__
 
 RndNetwork/InverseNetwork
 ~~~~~~~~~~~~~~~~~
