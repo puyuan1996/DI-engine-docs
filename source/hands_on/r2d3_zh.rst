@@ -5,12 +5,12 @@ R2D3
 ---------
 R2D3 (Recurrent Replay Distributed DQN from Demonstrations) 首次在论文
 `Making Efficient Use of Demonstrations to Solve Hard Exploration Problems <https://arxiv.org/abs/1909.01387>`_ 中提出, 它可以有效地利用专家演示轨迹来解决具有以下3个属性的问题：初始条件高度可变、部分可观察、困难探索。
-此外他们还介绍了一组结合这三个属性的八个任务，并表明R2D3可以解决像这些任务，值得注意的是，在类似这样的任务上，其他一些最先进的方法，无论有还是没有专家演示轨迹，在数百亿次的探索步骤之后甚至可能
-无法看到一条成功的轨迹。R2D3本质上是有效结合了R2D2算法的分布式框架和循环神经网络结构，以及DQfD中为从专家轨迹中学习而特别设计的损失函数。
+此外他们还介绍了一组结合这三个属性的八个任务，并表明R2D3可以解决像这些任务，值得注意的是，在类似这样的任务上，其他一些最先进的方法，无论使用还是不使用专家演示轨迹，在数百亿次的探索步之后可能
+仍然无法得到一条成功的轨迹。R2D3本质上是有效结合了R2D2算法的分布式框架和循环神经网络结构，以及 `DQfD <https://arxiv.org/abs/1704.03732>`__ 中为从专家轨迹中学习而特别设计的损失函数。
 
 核心要点
 -------------
-1.R2D3的基线强化学习算法是 `R2D2 <https://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`_, 可以参考我们的实现 `r2d2 <https://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`_ ,
+1.R2D3的基线强化学习算法是 `R2D2 <https://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`_, 可以参考我们的实现 `R2D2 <https://github.com/opendilab/DI-engine/blob/main/ding/policy/r2d2.py>`_ ,
 它本质上是一个基于分布式框架，采用了双Q网络(Double Q Networks), 决斗Q结构(Dueling Architecture)，多步时间差分损失函数(n-step TD loss)的DQN算法。
 
 2.R2D3利用了DQfD的损失函数，包括：一步和n步的时序差分损失，神经网络参数的L2正则化损失(可选)，监督大间隔分类损失(supervised large margin classification loss)。
@@ -190,14 +190,14 @@ A个actor会定期获取learner上最新的参数。
 实现
 ====
 
-r2d3的策略 ``R2D3Policy`` 的接口定义如下：
+R2D3的策略 ``R2D3Policy`` 的接口定义如下：
 
 .. autoclass:: ding.policy.r2d3.R2D3Policy
    :members: __init__, _forward_learn
    :noindex:
 
 
-dqfd的损失函数 ``nstep_td_error_with_rescale`` 的接口定义如下：
+DQfD的损失函数 ``nstep_td_error_with_rescale`` 的接口定义如下：
 
 .. autofunction:: ding.rl_utils.td.dqfd_nstep_td_error_with_rescale
    :noindex:
@@ -297,6 +297,8 @@ dqfd的损失函数 ``nstep_td_error_with_rescale`` 的接口定义如下：
 - Paine T L, Gulcehre C, Shahriari B, et al. Making efficient use of demonstrations to solve hard exploration problems[J]. arXiv preprint arXiv:1909.01387, 2019.
 
 - Kapturowski S, Ostrovski G, Quan J, et al. Recurrent experience replay in distributed reinforcement learning[C]//International conference on learning representations. 2018.
+
+- Hester T, Vecerik M, Pietquin O, et al. Deep q-learning from demonstrations[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2018, 32(1).
 
 - Badia A P, Sprechmann P, Vitvitskyi A, et al. Never give up: Learning directed exploration strategies[J]. arXiv preprint arXiv:2002.06038, 2020.
 
