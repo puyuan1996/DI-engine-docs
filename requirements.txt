@@ -1,7 +1,10 @@
 Pillow==8.2.0
-sphinx>=2.2.1
-sphinx_rtd_theme~=0.4.3
+sphinx>=4.2,<7
+sphinx_rtd_theme
 enum_tools
 sphinx-toolbox
 plantumlcli>=0.0.2
+sphinx-autobuild
 git+http://github.com/opendilab/DI-engine@main
+-e git+https://github.com/opendilab/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+jinja2<3.1
